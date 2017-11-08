@@ -5,8 +5,10 @@ def main():
     data = get_data("country.csv")
     #print(len(data[1]))
     #print(sq_distance(a,b))
-    centroids = set_centroids(data, 3)
-    print(update_centroids(centroids, data, cluster(centroids,data)))
+    centroids = set_centroids(data, 5)
+    for i in range(16):
+        print("update ", i+1)
+        update_centroids(centroids, data, cluster(centroids,data))
 
 
 def get_data(file):
@@ -70,14 +72,21 @@ def update_centroids(centroids, data, clusters):
     :param cluster:
     :return:
     """
+    cost = 0
     for i in range(len(centroids)):
         tmp_centroid = np.array([0 for _ in range (len(centroids[i]))])
         num_added = 0
+
         for j in range(len(data)):
             if clusters[j] == i:
                 tmp_centroid = np.add(tmp_centroid, data[j])
                 num_added += 1
         centroids[i] = tmp_centroid/num_added
+        # add to the cost for the new centroids
+        for k in range(len(data)):
+            if clusters[k] == i:
+                cost += sq_distance(data[k], centroids[i])
+    print("cost for update: {}\n".format( cost/len(data)))
     return centroids
 
 if __name__ == "__main__":
