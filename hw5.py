@@ -4,42 +4,92 @@ import random
 import matplotlib.pyplot as plt
 
 def main():
-    data = get_data("country.csv")
-    best_list= []
-    #print(len(data[1]))
-    #print(sq_distance(a,b))
+    data, country_dict = get_data("country.csv")
+    if False:
+        generate_cost_graph(k_max=31, data=data)
 
-    for k in range(1, 31):
-        costs = {}
-        for _ in range(1):
-            centroids = set_centroids(data, k)
-            cost = 0
-            iters = 0
-            converged = False
-            while(not converged):
-                prev = cost
-                centroids, cost  = update_centroids(centroids, data, cluster(centroids, data))
-                #print("cost for update: {}".format(cost))
-                iters += 1
-                if cost == prev or iters> 500 :
-                    converged = True
-            # add the costs to the dict
-            if cost not in costs:
-                costs[cost] = 0
+    best_dict = {}
+    costs = {}
+    # run the cluster update for 1 trial
+    k = 30
+    for _ in range(10):
+        centroids = set_centroids(data, k)
+        cost = 0
+        iters = 0
+        converged = False
+        # run until converged OR until reach maxiters
+        while (not converged):
+            prev = cost
+            clust = cluster(centroids, data)
+            centroids, cost = update_centroids(centroids, data, clust)
+            # print("cost for update: {}".format(cost))
+            iters += 1
+            if cost == prev or iters > 500:
+                converged = True
+        # add the costs to the dict
+        costs[cost] = clust
 
-            costs[cost] += 1
-        best = max(costs.keys())
-        best_list.append(best)
-    print(best_list)
-    generate_cost_graph(best_list, [i for i in range(1,31)])
+    best = min(costs.keys())
+    best_dict[k] = [best, costs[best]]
+    clusters = best_dict[30][1]
+    # extract which cluster each country is in for printing
+    country_cluster_dict = {}
+    for country in range(len(clusters)):
+        country_cluster_dict[country] = clusters[country]
+    cluster_dict = {}
+    for country in country_cluster_dict:
+        cluster_number =country_cluster_dict[country]
+        if cluster_number in cluster_dict:
+            cluster_dict[cluster_number].append(country_dict[country])
+        else:
+            cluster_dict[cluster_number] = [country_dict[country]]
+    # print each cluster and its countries
+    for i in range(len(cluster_dict)):
+        print("cluster {}, contains: {}".format(i, str(cluster_dict[i])))
 
-def generate_cost_graph(costs, k_s):
+
+
+    for i in range(len(clusters)):
+        pass
+
+
+
+def generate_cost_graph(k_max, data):
     """
     generates the plot of costs vs k
     :param costs:
     :return:
     """
-    plt.plot(k_s, costs)
+    best_list = []
+
+
+    k_max = 31
+    # for k 1 -> k_max run K means
+    for k in range(1, k_max):
+        costs = {}
+        # run the cluster update for 1 trial
+        for _ in range(10):
+            centroids = set_centroids(data, k)
+            cost = 0
+            iters = 0
+            converged = False
+            # run until converged OR until reach maxiters
+            while (not converged):
+                prev = cost
+                clust = cluster(centroids, data)
+                centroids, cost = update_centroids(centroids, data, clust)
+                # print("cost for update: {}".format(cost))
+                iters += 1
+                if cost == prev or iters > 500:
+                    converged = True
+            # add the costs to the dict
+
+            costs[cost] = clust
+
+        best = min(costs.keys())
+        best_list.append(best)
+
+    plt.plot([i for i in range(1, k_max)], costs)
     plt.show()
 
 
@@ -52,12 +102,17 @@ def get_data(file):
     with open(file, newline='') as csvfile:
         reader = csv.reader(csvfile)
         data = []
+        countrys = {}
+        i = 0
         for row in reader:
             try:
+
                 data.append(np.array(row[1:], dtype=float))
+                countrys[i] = row[0]
+                i+=1
             except ValueError:
                 pass
-        return data
+        return data, countrys
 
 def sq_distance(x,y):
     """
