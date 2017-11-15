@@ -11,7 +11,7 @@ def main():
 
     for k in range(1, 31):
         costs = {}
-        for _ in range(10):
+        for _ in range(1):
             centroids = set_centroids(data, k)
             cost = 0
             iters = 0
@@ -30,6 +30,7 @@ def main():
             costs[cost] += 1
         best = max(costs.keys())
         best_list.append(best)
+    print(best_list)
     generate_cost_graph(best_list, [i for i in range(1,31)])
 
 def generate_cost_graph(costs, k_s):
