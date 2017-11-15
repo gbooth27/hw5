@@ -8,13 +8,16 @@ import math
 
 def main(skip):
     data, country_dict = get_data("country.csv")
+    ########################################################
+    # Include Command line arg -s to skip the graphing step
+    ########################################################
     if skip:
         generate_cost_graph(k_max=31, data=data)
 
     best = [math.inf,[]]
     # run the cluster update for 1 trial
     k = 40
-    for _ in range(30):
+    for _ in range(100):
         centroids = set_centroids(data, k)
         cost = 0
         iters = 0
@@ -58,7 +61,7 @@ def generate_cost_graph(k_max, data):
     :return:
     """
     best_list = []
-    k_max = 31
+    k_max = 51
     # for k 1 -> k_max run K means
     for k in range(1, k_max):
         costs = {}
@@ -82,7 +85,7 @@ def generate_cost_graph(k_max, data):
         best = min(costs.keys())
         best_list.append(best)
 
-    plt.plot([i for i in range(1, k_max)], costs)
+    plt.plot([i for i in range(1, k_max)], best_list)
     plt.show()
 
 
