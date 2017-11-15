@@ -11,11 +11,10 @@ def main(skip):
     if skip:
         generate_cost_graph(k_max=31, data=data)
 
-    best_dict = {}
-    costs = [math.inf,[]]
+    best = [math.inf,[]]
     # run the cluster update for 1 trial
-    k = 30
-    for _ in range(10):
+    k = 40
+    for _ in range(30):
         centroids = set_centroids(data, k)
         cost = 0
         iters = 0
@@ -24,16 +23,16 @@ def main(skip):
         while (not converged):
             prev = cost
             clust = cluster(centroids, data)
+            # Update the centroids
             centroids, cost = update_centroids(centroids, data, clust)
-            # print("cost for update: {}".format(cost))
             iters += 1
             if cost == prev or iters > 500:
                 converged = True
         # update the best cost
-        if costs[0] > cost:
-            costs = [cost, clust]
+        if best[0] > cost:
+            best = [cost, clust]
 
-    clusters = costs[1]
+    clusters = best[1]
     # extract which cluster each country is in for printing
     country_cluster_dict = {}
     # get each country's cluster
@@ -56,12 +55,9 @@ def main(skip):
 def generate_cost_graph(k_max, data):
     """
     generates the plot of costs vs k
-    :param costs:
     :return:
     """
     best_list = []
-
-
     k_max = 31
     # for k 1 -> k_max run K means
     for k in range(1, k_max):
@@ -82,9 +78,7 @@ def generate_cost_graph(k_max, data):
                 if cost == prev or iters > 500:
                     converged = True
             # add the costs to the dict
-
             costs[cost] = clust
-
         best = min(costs.keys())
         best_list.append(best)
 
