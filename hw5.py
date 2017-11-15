@@ -12,11 +12,11 @@ def main(skip):
     # Include Command line arg -s to skip the graphing step
     ########################################################
     if skip:
-        generate_cost_graph(k_max=31, data=data)
+        generate_cost_graph(k_max=51, data=data)
 
     best = [math.inf,[]]
     # run the cluster update for 1 trial
-    k = 40
+    k = 22
     for _ in range(100):
         centroids = set_centroids(data, k)
         cost = 0
@@ -51,7 +51,10 @@ def main(skip):
             cluster_dict[cluster_number] = [country_dict[country]]
     # print each cluster and its countries
     for i in range(len(cluster_dict)):
-        print("cluster {}, contains: {}".format(i, str(cluster_dict[i])))
+        print("Cluster {}, contains: ".format(i))
+        for country in cluster_dict[i]:
+            print("    * " + country)
+        print()
 
 
 
@@ -61,7 +64,6 @@ def generate_cost_graph(k_max, data):
     :return:
     """
     best_list = []
-    k_max = 51
     # for k 1 -> k_max run K means
     for k in range(1, k_max):
         costs = {}
