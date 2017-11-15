@@ -1,24 +1,45 @@
 import csv
 import numpy as np
+import random
+import matplotlib.pyplot as plt
 
 def main():
     data = get_data("country.csv")
+    best_list= []
     #print(len(data[1]))
     #print(sq_distance(a,b))
-    centroids = set_centroids(data, 3)
-    converged = False
-    cost = 0
-    while(not converged):
-        prev = cost
-        centroids, cost  = update_centroids(centroids, data, cluster(centroids, data))
-        if cost == prev:
-            converged = True
 
+    for k in range(1, 31):
+        costs = {}
+        for _ in range(10):
+            centroids = set_centroids(data, k)
+            cost = 0
+            iters = 0
+            converged = False
+            while(not converged):
+                prev = cost
+                centroids, cost  = update_centroids(centroids, data, cluster(centroids, data))
+                #print("cost for update: {}".format(cost))
+                iters += 1
+                if cost == prev or iters> 500 :
+                    converged = True
+            # add the costs to the dict
+            if cost not in costs:
+                costs[cost] = 0
 
+            costs[cost] += 1
+        best = max(costs.keys())
+        best_list.append(best)
+    generate_cost_graph(best_list, [i for i in range(1,31)])
 
-    for i in range(16):
-        #print("update ", i+1)
-        update_centroids(centroids, data, cluster(centroids,data))
+def generate_cost_graph(costs, k_s):
+    """
+    generates the plot of costs vs k
+    :param costs:
+    :return:
+    """
+    plt.plot(k_s, costs)
+    plt.show()
 
 
 def get_data(file):
@@ -54,10 +75,7 @@ def set_centroids(data,k):
     :param k:
     :return:
     """
-    centroids=[]
-    for i in range(k):
-        centroids.append(data[i])
-    return centroids
+    return random.sample(data, k)
 
 def cluster(centroids, data):
     """
@@ -97,7 +115,9 @@ def update_centroids(centroids, data, clusters):
         for k in range(len(data)):
             if clusters[k] == i:
                 cost += sq_distance(data[k], centroids[i])
-    print("cost for update: {}".format( cost/len(data)))
+    cost = cost / len(data)
+
+
     return centroids, cost
 
 if __name__ == "__main__":
