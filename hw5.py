@@ -2,14 +2,17 @@ import csv
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import argparse
+import math
 
-def main():
+
+def main(skip):
     data, country_dict = get_data("country.csv")
-    if False:
+    if skip:
         generate_cost_graph(k_max=31, data=data)
 
     best_dict = {}
-    costs = {}
+    costs = [math.inf,[]]
     # run the cluster update for 1 trial
     k = 30
     for _ in range(10):
@@ -26,17 +29,18 @@ def main():
             iters += 1
             if cost == prev or iters > 500:
                 converged = True
-        # add the costs to the dict
-        costs[cost] = clust
+        # update the best cost
+        if costs[0] > cost:
+            costs = [cost, clust]
 
-    best = min(costs.keys())
-    best_dict[k] = [best, costs[best]]
-    clusters = best_dict[30][1]
+    clusters = costs[1]
     # extract which cluster each country is in for printing
     country_cluster_dict = {}
+    # get each country's cluster
     for country in range(len(clusters)):
         country_cluster_dict[country] = clusters[country]
     cluster_dict = {}
+    # get the countries in each cluster
     for country in country_cluster_dict:
         cluster_number =country_cluster_dict[country]
         if cluster_number in cluster_dict:
@@ -46,11 +50,6 @@ def main():
     # print each cluster and its countries
     for i in range(len(cluster_dict)):
         print("cluster {}, contains: {}".format(i, str(cluster_dict[i])))
-
-
-
-    for i in range(len(clusters)):
-        pass
 
 
 
@@ -177,4 +176,8 @@ def update_centroids(centroids, data, clusters):
     return centroids, cost
 
 if __name__ == "__main__":
-    main()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--skip', "-s", dest='feature', action='store_false', help="use to skip creation of word files")
+    args = parser.parse_args()
+    main(args.feature)
